@@ -15,8 +15,10 @@ class PortfolioController extends Controller
      */
     public function index()
     {
-        info('here');
-        $portfolios = Portfolio::where('user_id', Auth::user()->id)->first();
+        $portfolios = Portfolio::where('user_id', Auth::user()->id)
+        ->with('assets.shares')
+        ->with('assets.ticker')
+        ->first();
         return response()->json($portfolios);
     }
 

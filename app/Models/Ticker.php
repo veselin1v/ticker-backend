@@ -8,6 +8,7 @@ class Ticker extends Model
 {
     protected $fillable = [
         'ticker',
-        'name'
+        'name',
+        'price_per_share'
     ];
 }

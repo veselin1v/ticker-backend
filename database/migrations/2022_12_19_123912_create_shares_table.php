@@ -13,11 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tickers', function (Blueprint $table) {
+        Schema::create('shares', function (Blueprint $table) {
             $table->id();
-            $table->string('ticker');
-            $table->string('name');
-            $table->float('price_per_share')->nullable();
+            $table->integer('asset_id');
+            $table->string('trade');
+            $table->float('quantity');
+            $table->float('price_per_share');
+            $table->float('total_price');
             $table->timestamps();
         });
     }
@@ -29,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tickers');
+        Schema::dropIfExists('shares');
     }
 };

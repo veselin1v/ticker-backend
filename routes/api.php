@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\TickerController;
+use App\Http\Controllers\AssetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,4 +23,6 @@ Route::middleware('auth:sanctum')->group(function() {
     });
     Route::resource('portfolios', PortfolioController::class);
     Route::get('check/auth', fn() => true );
+    Route::get('tickers/search/{name}', [TickerController::class, 'search']);
+    Route::resource('assets', AssetController::class);
 });

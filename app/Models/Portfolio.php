@@ -11,4 +11,9 @@ class Portfolio extends Model
         'name',
         'balance'
     ];
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }
