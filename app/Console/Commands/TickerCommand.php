@@ -28,8 +28,13 @@ class TickerCommand extends Command
      * @return int
      */
     public function handle()
-    {
-        $response = Http::get('https://api.polygon.io/v3/reference/tickers?active=true&limit=1000&apiKey=QAeE2PfbtZ4SwEZLSUUJc5JxHSEogotK&market=stocks');
+    {  
+        $response = Http::get(config('polygon.api') . '/v3/reference/tickers', [
+            'active' => 'true',
+            'limit' => 1000,
+            'market' => 'stocks',
+            'apiKey' => config('polygon.api_key')
+        ]);
         if ($response['status'] == 'OK') {
             foreach ($response['results'] as $ticker) {
                 Ticker::create([

@@ -17,7 +17,10 @@ return new class extends Migration
             $table->id();
             $table->tinyInteger('user_id');
             $table->string('name');
-            $table->float('balance')->nullable();
+            $table->float('equity')->nullable();
+            $table->float('invested')->nullable();
+            $table->float('profit')->nullable();
+            $table->float('roi')->nullable();
             $table->timestamps();
         });
     }
