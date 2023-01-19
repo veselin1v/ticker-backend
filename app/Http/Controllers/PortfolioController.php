@@ -17,11 +17,11 @@ class PortfolioController extends Controller
      */
     public function index()
     {
-        $portfolios = Portfolio::where('user_id', Auth::user()->id)
+        $portfolio = Portfolio::where('user_id', Auth::user()->id)
         ->with('assets.shares')
         ->with('assets.ticker')
         ->first();
-        return response()->json($portfolios);
+        return response()->json($portfolio);
     }
 
     /**
@@ -85,27 +85,28 @@ class PortfolioController extends Controller
         $assets = Asset::where('portfolio_id', $id)->get();
         $equity = 0;
         $invested = 0;
-
-        foreach ($assets as $asset) {
-            $tickerPrice = Ticker::where('id', $asset->ticker_id)->first()->price_per_share;
-            Asset::where('id', $asset->id)->update([
-                'position_worth' => $tickerPrice * $asset->quantity,
-                'profit' => ($tickerPrice * $asset->quantity) - $asset->invested,
-                'roi' => (($tickerPrice * $asset->quantity) - $asset->invested) / $asset->invested * 100
+        if (count($assets)) {
+            foreach ($assets as $asset) {
+                $tickerPrice = Ticker::where('id', $asset->ticker_id)->first()->price_per_share;
+                Asset::where('id', $asset->id)->update([
+                    'position_worth' => $tickerPrice * $asset->quantity,
+                    'profit' => ($tickerPrice * $asset->quantity) - $asset->invested,
+                    'roi' => (($tickerPrice * $asset->quantity) - $asset->invested) / $asset->invested * 100
+                ]);
+                $equity += $asset->position_worth;
+                $invested += $asset->invested;
+            }
+    
+            $profit = $equity - $invested;
+            $roi = ($equity - $invested) / $invested * 100;
+    
+            Portfolio::where('id', $id)->update([
+                'equity' => $equity,
+                'invested' => $invested,
+                'profit' => $profit,
+                'roi' => $roi
             ]);
-            $equity += $asset->position_worth;
-            $invested += $asset->invested;
         }
-
-        $profit = $equity - $invested;
-        $roi = ($equity - $invested) / $invested * 100;
-
-        Portfolio::where('id', $id)->update([
-            'equity' => $equity,
-            'invested' => $invested,
-            'profit' => $profit,
-            'roi' => $roi
-        ]);
     }
 
     /**

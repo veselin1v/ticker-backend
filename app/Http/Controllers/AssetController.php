@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Asset;
 use App\Models\Share;
 use App\Models\Ticker;
+use App\Models\Dividend;
 use Illuminate\Support\Facades\Http;
 
 class AssetController extends Controller
@@ -39,7 +40,7 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $asset = Asset::where('portfolio_id', $request['portfolio_id'])
-                ->where('ticker_id', $request['ticker_id']);
+                ->where('ticker_id', $request['ticker_id'])->with('ticker');
         if (!$asset->exists()) {
             $id = Asset::create([
                 'portfolio_id' => $request['portfolio_id'],
@@ -56,6 +57,25 @@ class AssetController extends Controller
             'total_price' => $request['quantity'] * $request['price']
         ]);
         $this->update($id);
+
+        $response = Http::get(config('polygon.api') . '/v3/reference/dividends', [
+            'ticker' => $asset->first()->ticker->ticker,
+            'limit' => 1,
+            'apiKey' => config('polygon.api_key')
+        ]);
+        if ($response['results']) {
+            $dividend = $response['results'][0];
+            if (!Dividend::where('ticker_id', $request['ticker_id'])
+                ->where('ex_dividend_date', $dividend['ex_dividend_date'])
+                ->exists()) {
+                    Dividend::create([
+                        'ticker_id' => $request['ticker_id'],
+                        'ex_dividend_date' => $dividend['ex_dividend_date'],
+                        'pay_date' => $dividend['pay_date'],
+                        'cash_amount' => $dividend['cash_amount']
+                     ]);       
+            }
+        }
         return response()->json(['message' => 'The asset has been added!']);
     }
 
@@ -98,7 +118,7 @@ class AssetController extends Controller
             $invested += $share->total_price;
         }
         $asset = Asset::where('id', $id);
-        $tickerPrice = $this->getTickerPrice($id);
+        $tickerPrice = Ticker::where('id', $asset->first()->ticker_id)->first()->price_per_share;
         $asset->update([
            'quantity' => $quantity,
            'invested' => $invested,
@@ -109,18 +129,18 @@ class AssetController extends Controller
         ]);
     }
 
-    public function getTickerPrice($id) {
-        $ticker = Asset::where('id', $id)->with(['ticker' => function ($query) {
-                $query->select('id', 'ticker');
-            }])
-            ->first()->ticker;
-        $response = Http::get('https://api.polygon.io/v2/aggs/ticker/'.$ticker->ticker.'/range/1/day/2022-12-21/2022-12-21?adjusted=true&sort=asc&limit=1&apiKey=QAeE2PfbtZ4SwEZLSUUJc5JxHSEogotK');
-        if ($response['status'] == 'OK') {
-            $closedPrice = $response['results'][0]['c'];
-            Ticker::where('id', $ticker->id)->update(['price_per_share' => $closedPrice]);
-            return $closedPrice;
-        }
-    }
+    // public function getTickerPrice($id) {
+    //     $ticker = Asset::where('id', $id)->with(['ticker' => function ($query) {
+    //             $query->select('id', 'ticker');
+    //         }])
+    //         ->first()->ticker;
+    //     $response = Http::get('https://api.polygon.io/v2/aggs/ticker/'.$ticker->ticker.'/range/1/day/2022-12-21/2022-12-21?adjusted=true&sort=asc&limit=1&apiKey=QAeE2PfbtZ4SwEZLSUUJc5JxHSEogotK');
+    //     if ($response['status'] == 'OK') {
+    //         $closedPrice = $response['results'][0]['c'];
+    //         Ticker::where('id', $ticker->id)->update(['price_per_share' => $closedPrice]);
+    //         return $closedPrice;
+    //     }
+    // }
 
     /**
      * Remove the specified resource from storage.

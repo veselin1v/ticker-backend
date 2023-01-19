@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Models\Ticker;
+use Illuminate\Support\Facades\Artisan;
 
 class TickerCommand extends Command
 {
@@ -13,7 +14,7 @@ class TickerCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'ticker:add';
+    protected $signature = 'ticker:add {cursor?} {count?}';
 
     /**
      * The console command description.
@@ -33,14 +34,30 @@ class TickerCommand extends Command
             'active' => 'true',
             'limit' => 1000,
             'market' => 'stocks',
+            'cursor' => $this->argument('cursor') ?? null,
             'apiKey' => config('polygon.api_key')
         ]);
+
+        $count = $this->argument('count') ?? 0;
+
         if ($response['status'] == 'OK') {
             foreach ($response['results'] as $ticker) {
-                Ticker::create([
+                Ticker::updateOrCreate([
                     'ticker' => $ticker['ticker'],
                     'name'  => $ticker['name']
                 ]);
+            }
+            if ($response['next_url']) {
+                $url = parse_url($response['next_url']);
+                if ($url['query']) {
+                    $cursor = explode('=', $url['query']);
+                    $count++;
+                    if ($count == 5) {
+                        $count = 0;
+                        sleep(60);
+                    }
+                    Artisan::call('ticker:add', ['cursor' => $cursor[1], 'count' => $count]);
+                }
             }
         }
     }
