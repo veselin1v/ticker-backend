@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Ticker;
 use Illuminate\Support\Facades\Artisan;
 
-class TickerCommand extends Command
+class TickerAdd extends Command
 {
     /**
      * The name and signature of the console command.

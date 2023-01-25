@@ -63,11 +63,11 @@ class AssetController extends Controller
             'limit' => 1,
             'apiKey' => config('polygon.api_key')
         ]);
-        if ($response['results']) {
+        if (response['status'] == 'OK' && $response['results']) {
             $dividend = $response['results'][0];
-            if (!Dividend::where('ticker_id', $request['ticker_id'])
+            if (Dividend::where('ticker_id', $request['ticker_id'])
                 ->where('ex_dividend_date', $dividend['ex_dividend_date'])
-                ->exists()) {
+                ->doesntExist()) {
                     Dividend::create([
                         'ticker_id' => $request['ticker_id'],
                         'ex_dividend_date' => $dividend['ex_dividend_date'],
