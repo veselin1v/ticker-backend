@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Share extends Model
+class Trade extends Model
 {
     protected $fillable = [
         'asset_id',

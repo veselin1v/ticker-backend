@@ -17,9 +17,9 @@ class Asset extends Model
         'roi'
     ];
 
-    public function shares()
+    public function trades()
     {
-        return $this->hasMany(Share::class);
+        return $this->hasMany(Trade::class)->orderByDesc('created_at');
     }
 
     public function ticker()

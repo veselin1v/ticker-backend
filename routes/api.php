@@ -6,6 +6,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\TickerController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\DividendController;
+use App\Http\Controllers\TradeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,4 +28,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('tickers/search/{name}', [TickerController::class, 'search']);
     Route::resource('assets', AssetController::class);
     Route::get('dividends', [DividendController::class, 'index']);
+    Route::post('trades', [TradeController::class, 'store']);
 });

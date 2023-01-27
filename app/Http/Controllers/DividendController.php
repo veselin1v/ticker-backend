@@ -59,7 +59,7 @@ class DividendController extends Controller
             $date = array_column($upcomingDividends, 'date');
             $receivedAt = array_column($receivedDividends, 'received_at');
             array_multisort($upcomingDividends, SORT_ASC, $date);   
-            array_multisort($receivedDividends, SORT_DESC, $receivedAt);   
+            array_multisort($receivedDividends, SORT_ASC, $receivedAt);   
 
             return response()->json([
                 'dividends' => $dividends,

@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Asset;
-use App\Models\Share;
+use App\Models\Trade;
 use App\Models\Ticker;
 use App\Models\Dividend;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
 
 class AssetController extends Controller
 {
@@ -49,7 +50,7 @@ class AssetController extends Controller
         } else {
             $id = $asset->first()->id;
         }
-        Share::create([
+        Trade::create([
             'asset_id' => $id,
             'trade' => 'buy',
             'quantity' => $request['quantity'],
@@ -87,7 +88,13 @@ class AssetController extends Controller
      */
     public function show($id)
     {
-        //
+
+        $asset = Asset::where('id', $id)->with('trades')->first();
+        $asset->ticker = Ticker::where('id', $asset->ticker_id)->first()->ticker;
+        foreach ($asset->trades as $trade) {
+            $trade->created_at_format = Carbon::parse($trade->created_at)->format('d.m.Y H:i');
+        }
+        return $asset;
     }
 
     /**
@@ -110,12 +117,17 @@ class AssetController extends Controller
      */
     public function update($id)
     {
-        $shares = Share::where('asset_id', $id)->get();
+        $trades = Trade::where('asset_id', $id)->get();
         $quantity = 0;
         $invested = 0;
-        foreach ($shares as $share) {
-            $quantity += $share->quantity;
-            $invested += $share->total_price;
+        foreach ($trades as $trade) {
+            if ($trade->trade == 'buy') {
+                $quantity += $trade->quantity;
+                $invested += $trade->total_price;
+            } else {
+                $quantity -= $trade->quantity;
+                $invested -= $trade->total_price;
+            }
         }
         $asset = Asset::where('id', $id);
         $tickerPrice = Ticker::where('id', $asset->first()->ticker_id)->first()->price_per_share;
