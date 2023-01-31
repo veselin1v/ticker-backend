@@ -12,7 +12,7 @@ class Asset extends Model
         'quantity',
         'invested',
         'average_price',
-        'positon_worth',
+        'position_worth',
         'profit',
         'roi'
     ];

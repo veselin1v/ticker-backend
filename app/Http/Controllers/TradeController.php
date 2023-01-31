@@ -17,7 +17,10 @@ class TradeController extends Controller
             'total_price' => $request['quantity'] * $request['price_per_share']
         ]);
 
-        return response()->json(['message' => 'The trade has been added successfully!']);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'The trade has been added successfully!'
+        ]);
     }
 
 }

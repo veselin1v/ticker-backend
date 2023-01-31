@@ -9,9 +9,12 @@ use App\Models\Ticker;
 use App\Models\Dividend;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
+use App\Http\Traits\AssetTrait;
 
 class AssetController extends Controller
 {
+    use AssetTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -64,7 +67,7 @@ class AssetController extends Controller
             'limit' => 1,
             'apiKey' => config('polygon.api_key')
         ]);
-        if (response['status'] == 'OK' && $response['results']) {
+        if ($response['status'] == 'OK' && $response['results']) {
             $dividend = $response['results'][0];
             if (Dividend::where('ticker_id', $request['ticker_id'])
                 ->where('ex_dividend_date', $dividend['ex_dividend_date'])
@@ -117,42 +120,8 @@ class AssetController extends Controller
      */
     public function update($id)
     {
-        $trades = Trade::where('asset_id', $id)->get();
-        $quantity = 0;
-        $invested = 0;
-        foreach ($trades as $trade) {
-            if ($trade->trade == 'buy') {
-                $quantity += $trade->quantity;
-                $invested += $trade->total_price;
-            } else {
-                $quantity -= $trade->quantity;
-                $invested -= $trade->total_price;
-            }
-        }
-        $asset = Asset::where('id', $id);
-        $tickerPrice = Ticker::where('id', $asset->first()->ticker_id)->first()->price_per_share;
-        $asset->update([
-           'quantity' => $quantity,
-           'invested' => $invested,
-           'average_price' => $invested / $quantity,
-           'position_worth' => $tickerPrice * $quantity,
-           'profit' => ($tickerPrice * $quantity) - $invested,
-           'roi' => (($tickerPrice * $quantity) - $invested) / $invested * 100
-        ]);
+        $this->updateAsset($id);
     }
-
-    // public function getTickerPrice($id) {
-    //     $ticker = Asset::where('id', $id)->with(['ticker' => function ($query) {
-    //             $query->select('id', 'ticker');
-    //         }])
-    //         ->first()->ticker;
-    //     $response = Http::get('https://api.polygon.io/v2/aggs/ticker/'.$ticker->ticker.'/range/1/day/2022-12-21/2022-12-21?adjusted=true&sort=asc&limit=1&apiKey=QAeE2PfbtZ4SwEZLSUUJc5JxHSEogotK');
-    //     if ($response['status'] == 'OK') {
-    //         $closedPrice = $response['results'][0]['c'];
-    //         Ticker::where('id', $ticker->id)->update(['price_per_share' => $closedPrice]);
-    //         return $closedPrice;
-    //     }
-    // }
 
     /**
      * Remove the specified resource from storage.
