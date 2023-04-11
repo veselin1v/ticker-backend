@@ -14,7 +14,8 @@ class Asset extends Model
         'average_price',
         'position_worth',
         'profit',
-        'roi'
+        'roi',
+        'annual_dividend'
     ];
 
     public function trades()

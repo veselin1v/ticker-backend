@@ -34,7 +34,7 @@ class DividendUpcomingJob implements ShouldQueue
      */
     public function handle()
     {
-        sleep(15);
+        sleep(30);
         $response = Http::get(config('polygon.api') . '/v3/reference/dividends', [
             'ticker' => $this->asset->ticker->ticker,
             'limit' => 1,

@@ -11,7 +11,9 @@ class Portfolio extends Model
         'name',
         'equity',
         'invested',
-        'roi'
+        'roi',
+        'annual_dividend',
+        'dividend_yield'
     ];
 
     public function assets()

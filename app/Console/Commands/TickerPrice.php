@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Models\Ticker;
+use App\Models\Dividend;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
@@ -41,7 +42,20 @@ class TickerPrice extends Command
             foreach ($response->results as $ticker) {
                 $tick = Ticker::where('ticker', $ticker->T);
                 if ($tick->exists()) {
-                    $tick->update(['price_per_share' => $ticker->c]);
+                    $dividend = Dividend::where('ticker_id', $tick->first()->id);
+                    $lastDividend = null;
+                    if ($dividend->exists()) {
+                        $lastDividend = $dividend->orderBy('ex_dividend_date','DESC')->first();
+                    }
+                    $tick->update([
+                        'price_per_share' => $ticker->c,
+                    ]);
+                    if ($lastDividend != null) {
+                        $tick->update([
+                            'annual_dividend' => $lastDividend->cash_amount * 4,
+                            'dividend_yield' => (($lastDividend->cash_amount * 4) / $ticker->c) * 100
+                        ]);
+                    }
                 }
             }
         } else {

@@ -23,15 +23,16 @@ trait AssetTrait
                 $quantity -= $trade->quantity;
             }
         }
-        $tickerPrice = Ticker::where('id', $asset->ticker_id)->first()->price_per_share;
+        $ticker = Ticker::where('id', $asset->ticker_id)->select(['price_per_share', 'annual_dividend'])->first();
         if ($quantity > 0) {
             $asset->update([
                 'quantity' => $quantity,
                 'invested' => $invested,
                 'average_price' => $average_price,
-                'position_worth' => $tickerPrice * $quantity,
-                'profit' => ($tickerPrice * $quantity) - $invested,
-                'roi' => (($tickerPrice * $quantity) - $invested) / $invested * 100
+                'position_worth' => $ticker->price_per_share * $quantity,
+                'profit' => ($ticker->price_per_share * $quantity) - $invested,
+                'roi' => (($ticker->price_per_share * $quantity) - $invested) / $invested * 100,
+                'annual_dividend' => $ticker->annual_dividend * $quantity
              ]);
         } else {
             $lastTrade = Trade::where('asset_id', $id)->where('trade', 'sell')->latest('created_at')->first();

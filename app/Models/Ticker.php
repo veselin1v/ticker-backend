@@ -9,6 +9,8 @@ class Ticker extends Model
     protected $fillable = [
         'ticker',
         'name',
-        'price_per_share'
+        'price_per_share',
+        'annual_dividend',
+        'dividend_yield'
     ];
 }

@@ -91,6 +91,8 @@ class PortfolioController extends Controller
         $invested = 0;
         $profit = 0;
         $roi = 0;
+        $annual_dividend = 0;
+        $dividend_yield = 0;
         if (count($assets)) {
             foreach ($assets as $asset) {
                 $this->updateAsset($asset->id);
@@ -98,6 +100,7 @@ class PortfolioController extends Controller
                 $invested += $asset->invested;
                 $profit += $asset->profit;
                 $roi += $asset->roi;
+                $annual_dividend += $asset->annual_dividend;
             }
         }
 
@@ -106,11 +109,19 @@ class PortfolioController extends Controller
             $roi = ($equity - $invested) / $invested * 100;   
         }
 
+        if ($annual_dividend > 0) {
+            $dividend_yield = ($annual_dividend / $equity) * 100;
+        } else {
+            $annual_dividend = '$0';
+            $dividend_yield = '-';
+        }
+
         Portfolio::where('id', $id)->update([
             'equity' => $equity,
             'invested' => $invested,
             'profit' => $profit,
-            'roi' => $roi
+            'annual_dividend' => $annual_dividend,
+            'dividend_yield' => $dividend_yield
         ]);
     }
 

@@ -93,7 +93,7 @@ class AssetController extends Controller
     {
 
         $asset = Asset::where('id', $id)->with('trades')->first();
-        $asset->ticker = Ticker::where('id', $asset->ticker_id)->first()->ticker;
+        $asset->ticker = Ticker::where('id', $asset->ticker_id)->select(['ticker', 'dividend_yield'])->first();
         foreach ($asset->trades as $trade) {
             $trade->created_at_format = Carbon::parse($trade->created_at)->format('d.m.Y H:i');
         }
