@@ -18,6 +18,6 @@ class Portfolio extends Model
 
     public function assets()
     {
-        return $this->hasMany(Asset::class);
+        return $this->hasMany(Asset::class)->where('quantity', '!=', 0);
     }
 }

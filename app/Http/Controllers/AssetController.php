@@ -7,9 +7,11 @@ use App\Models\Asset;
 use App\Models\Trade;
 use App\Models\Ticker;
 use App\Models\Dividend;
+use App\Models\Portfolio;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
 use App\Http\Traits\AssetTrait;
+use Auth;
 
 class AssetController extends Controller
 {
@@ -22,7 +24,15 @@ class AssetController extends Controller
      */
     public function index()
     {
-        //
+        $portfolioId = Portfolio::where('user_id', Auth::user()->id)->first()->id;
+
+        if ($portfolioId) {
+            $assets = Asset::where('portfolio_id', $portfolioId)->with('trades')->with('ticker')->get();
+            if ($assets) {
+                return response()->json($assets);
+            }
+        }
+
     }
 
     /**

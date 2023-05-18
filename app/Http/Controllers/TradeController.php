@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Portfolio;
 use App\Models\Trade;
+use Auth;
 
 class TradeController extends Controller
 {
